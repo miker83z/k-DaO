@@ -2,12 +2,24 @@
 
 pragma solidity ^0.8.0;
 
-import "./NonSafeTokenTimelockProxy.sol";
+import "./TokenTimelockProxy.sol";
 
 /**
- * @dev DAO Voting contract
+ * @dev kDaO contract
  */
-contract NonSafeVoting {
+contract kDaO is Initializable {
+    // Token used by the DAO
+    address public _erc20token;
+
+    // The DAO's members
+    address[] public _members;
+
+    // The DAO's aggregator
+    address public _aggregator;
+
+    // The aggregator's funds release date
+    uint256 public _releaseDate;
+
     // The contract used for votes weights
     address public _tokenTimelocks;
 
@@ -38,6 +50,7 @@ contract NonSafeVoting {
         mapping(address => Vote) votes;
         bool executed;
         bool proposalPassed;
+        bool locked;
         uint256 finalResult;
     }
 
@@ -120,20 +133,115 @@ contract NonSafeVoting {
     }
 
     /**
+     * @dev init DAO
+     *
      * @param tokenTimelockProxy Address of the token timelock proxy used for weight
      * @param minimumQuorumForProposals Number used to validate a vote in the execution
      * @param minTimeForDebate minimum time required before execution
      */
-    constructor(
+    function __kDaO_init(
+        address ERC20token,
+        address[] memory members,
+        address aggregator,
+        uint256 releaseDate,
         address tokenTimelockProxy,
         uint256 minimumQuorumForProposals,
         uint256 minTimeForDebate,
         uint256 minDifferenceLockPeriod_
-    ) {
+    ) internal onlyInitializing {
+        __kDaO_init_unchained(
+            ERC20token,
+            members,
+            aggregator,
+            releaseDate,
+            tokenTimelockProxy,
+            minimumQuorumForProposals,
+            minTimeForDebate,
+            minDifferenceLockPeriod_
+        );
+    }
+
+    function __kDaO_init_unchained(
+        address ERC20token,
+        address[] memory members,
+        address aggregator,
+        uint256 releaseDate,
+        address tokenTimelockProxy,
+        uint256 minimumQuorumForProposals,
+        uint256 minTimeForDebate,
+        uint256 minDifferenceLockPeriod_
+    ) internal onlyInitializing {
+        _erc20token = ERC20token;
+        _members = members;
+        _releaseDate = releaseDate;
+        _aggregator = aggregator;
         _tokenTimelocks = tokenTimelockProxy;
         _minQuorum = minimumQuorumForProposals;
         _minDebatingPeriod = minTimeForDebate;
         _minDifferenceLockPeriod = minDifferenceLockPeriod_;
+    }
+
+    function initialize(
+        address ERC20token,
+        address[] memory members,
+        address aggregator,
+        uint256 releaseDate,
+        address tokenTimelockProxy,
+        uint256 minimumQuorumForProposals,
+        uint256 minTimeForDebate,
+        uint256 minDifferenceLockPeriod_
+    ) public initializer {
+        __kDaO_init(
+            ERC20token,
+            members,
+            aggregator,
+            releaseDate,
+            tokenTimelockProxy,
+            minimumQuorumForProposals,
+            minTimeForDebate,
+            minDifferenceLockPeriod_
+        );
+    }
+
+    /**
+     * @dev Add Refund Proposal
+     */
+    function submitRefundProposal(
+        string memory metadata,
+        uint256 debatingPeriod,
+        uint256 quorum
+    ) public returns (uint256 proposalID) {
+        uint256 executionDate = block.timestamp + debatingPeriod;
+        require(executionDate <= _releaseDate);
+        proposalID = submitProposal(metadata, debatingPeriod, quorum);
+        submitSuggestion(proposalID, "refund");
+        submitSuggestion(proposalID, "not-refund");
+        Proposal storage p = _proposals[proposalID];
+        p.locked = true;
+    }
+
+    /**
+     * @dev Execute proposal and enact result
+     */
+    function executeRefundProposal(uint256 proposalID) public {
+        require(proposalID < _numProposals);
+        Proposal storage p = _proposals[proposalID];
+        require(p.locked == true); //check that is refund type
+
+        executeProposal(proposalID);
+
+        if (p.proposalPassed && p.finalResult == 0) {
+            _transferFundsToMembers();
+        }
+    }
+
+    /**
+     * @dev Execute proposal and enact result
+     */
+    function releaseFundsToAggregator() public {
+        require(block.timestamp >= _releaseDate);
+
+        _transferFundsToAggregator();
     }
 
     /**
@@ -179,7 +287,7 @@ contract NonSafeVoting {
         require(proposalID < _numProposals, "Wrong roposal id");
         Proposal storage p = _proposals[proposalID];
         require(
-            !p.executed && block.timestamp < p.executionDate,
+            !p.locked && !p.executed && block.timestamp <= p.executionDate,
             "Proposal executed or to be executed"
         );
         require(
@@ -210,11 +318,10 @@ contract NonSafeVoting {
         require(proposalID < _numProposals);
         Proposal storage p = _proposals[proposalID];
         require(!p.executed && block.timestamp <= p.executionDate);
-        uint256 voteWeigth =
-            checkLockedTokens(
-                msg.sender,
-                p.executionDate + _minDifferenceLockPeriod
-            );
+        uint256 voteWeigth = checkLockedTokens(
+            msg.sender,
+            p.executionDate + _minDifferenceLockPeriod
+        );
         require(voteWeigth > 0, "Not enough tokens locked");
         Vote storage v = p.votes[msg.sender];
         require(!v.voted);
@@ -242,11 +349,10 @@ contract NonSafeVoting {
         require(proposalID < _numProposals);
         Proposal storage p = _proposals[proposalID];
         require(!p.executed && block.timestamp <= p.executionDate);
-        uint256 voteWeigth =
-            checkLockedTokens(
-                msg.sender,
-                p.executionDate + _minDifferenceLockPeriod
-            );
+        uint256 voteWeigth = checkLockedTokens(
+            msg.sender,
+            p.executionDate + _minDifferenceLockPeriod
+        );
         require(voteWeigth > 0, "Not enough tokens locked");
         Vote storage v = p.votes[msg.sender];
         require(v.voted);
@@ -314,14 +420,33 @@ contract NonSafeVoting {
         emit ProposalExecuted(proposalID, p.proposalPassed, p.finalResult);
     }
 
+    function _transferFundsToMembers() private {
+        uint256 totAmount = IERC20Upgradeable(_erc20token).balanceOf(
+            address(this)
+        );
+        uint256 amount = totAmount / _members.length;
+        for (uint256 i = 0; i < _members.length; i++) {
+            IERC20Upgradeable(_erc20token).transfer(_members[i], amount);
+        }
+    }
+
+    function _transferFundsToAggregator() private {
+        uint256 totAmount = IERC20Upgradeable(_erc20token).balanceOf(
+            address(this)
+        );
+        IERC20Upgradeable(_erc20token).transfer(_aggregator, totAmount);
+    }
+
     function checkLockedTokens(address locker, uint256 minDate)
         public
         view
         returns (uint256)
     {
         uint256 lockedTokens = 0;
-        (uint256[] memory releaseTimes, uint256[] memory balances) =
-            NonSafeTokenTimelockProxy(_tokenTimelocks)
+        (
+            uint256[] memory releaseTimes,
+            uint256[] memory balances
+        ) = TokenTimelockProxy(_tokenTimelocks)
                 .checkLockerReleaseTimesAndBalances(locker);
         for (uint256 i = 0; i < releaseTimes.length; i++) {
             if (releaseTimes[i] >= minDate) {

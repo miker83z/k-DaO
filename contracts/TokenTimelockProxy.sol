@@ -59,11 +59,17 @@ contract TokenTimelockProxy {
             releaseTime_
         );
 
-        IERC20Upgradeable(_tokenToLock).safeTransferFrom(
+        IERC20Upgradeable(_tokenToLock).transferFrom(
             msg.sender,
             clone,
             amountToLock_
         );
+        /*
+        IERC20Upgradeable(_tokenToLock).safeTransferFrom(
+            msg.sender,
+            clone,
+            amountToLock_
+        );*/
 
         _clonedContracts.push(clone);
         _clonedContractsPerUser[msg.sender].push(_clonedContracts.length - 1);
@@ -77,8 +83,9 @@ contract TokenTimelockProxy {
         returns (address[] memory)
     {
         uint256[] storage clonedIds = _clonedContractsPerUser[locker];
-        address[] memory lockerClonesAddresses =
-            new address[](clonedIds.length);
+        address[] memory lockerClonesAddresses = new address[](
+            clonedIds.length
+        );
 
         for (uint256 i = 0; i < clonedIds.length; i++) {
             lockerClonesAddresses[i] = (_clonedContracts[clonedIds[i]]);
@@ -93,15 +100,15 @@ contract TokenTimelockProxy {
         returns (uint256[] memory, uint256[] memory)
     {
         address[] memory lockerClonesAddresses = checkLocker(locker);
-        uint256[] memory releaseTimes =
-            new uint256[](lockerClonesAddresses.length);
+        uint256[] memory releaseTimes = new uint256[](
+            lockerClonesAddresses.length
+        );
         uint256[] memory balances = new uint256[](lockerClonesAddresses.length);
 
         for (uint256 i = 0; i < lockerClonesAddresses.length; i++) {
             releaseTimes[i] = SimpleTimelockUpgradeable(
                 lockerClonesAddresses[i]
-            )
-                .releaseTime();
+            ).releaseTime();
             balances[i] = SimpleTimelockUpgradeable(lockerClonesAddresses[i])
                 .balanceLocked();
         }

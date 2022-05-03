@@ -15,7 +15,7 @@ import "../node_modules/@openzeppelin/contracts/token/ERC20/extensions/ERC20Burn
  * its documentation for details.
  *
  */
-contract HypercubeDAOToken is ERC20Burnable {
+contract kDaOToken is ERC20Burnable {
     /**
      * @dev Mints `initialSupply` amount of token and transfers them to `owner`.
      *
