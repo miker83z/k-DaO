@@ -16,10 +16,6 @@ contract('AggregatorContract', (accounts) => {
   const millisToWait = 9000;
   const debatingPeriodMul = 2;
 
-  console.log(owner);
-  console.log(alice);
-  console.log(bob);
-
   it('should transfer 100 tokens to alice and bob', async () => {
     const token = await kDaOToken.deployed();
     const amount = new web3.utils.BN(100);

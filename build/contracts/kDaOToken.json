@@ -94,8 +94,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -138,8 +137,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -183,8 +181,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -245,8 +242,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [],
@@ -259,8 +255,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [],
@@ -273,8 +268,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -11782,8 +11776,7 @@
     }
   },
   "schemaVersion": "3.4.5",
-  "updatedAt": "2022-05-05T14:38:53.998Z",
-  "networkType": "ethereum",
+  "updatedAt": "2022-05-06T15:45:59.484Z",
   "devdoc": {
     "details": "{ERC20} token, including:  - Preminted initial supply  - Ability for holders to burn (destroy) their tokens  - No access control mechanism (for minting/pausing) and hence no governance This contract uses {ERC20Burnable} to include burn capabilities - head to its documentation for details.",
     "kind": "dev",
