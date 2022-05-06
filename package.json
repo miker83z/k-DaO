@@ -6,13 +6,16 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "cd node_modules/rpc-proxy && node ."
   },
   "author": "Mirko Zichichi <mikerz83@gmail.com>",
   "license": "MIT",
   "description": "",
   "dependencies": {
     "@openzeppelin/contracts": "^4.6.0",
-    "@openzeppelin/contracts-upgradeable": "^4.5.2"
+    "@openzeppelin/contracts-upgradeable": "^4.5.2",
+    "@truffle/hdwallet-provider": "^2.0.8",
+    "axios": "^0.27.2"
   }
 }

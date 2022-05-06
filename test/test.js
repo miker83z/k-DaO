@@ -6,31 +6,6 @@ const TokenTimelockProxy = artifacts.require('TokenTimelockProxy');
 const kDaO = artifacts.require('kDaO');
 const DataOwnerContract = artifacts.require('DataOwnerContract');
 const AggregatorContract = artifacts.require('AggregatorContract');
-/*
-contract('kDaO', (accounts) => {
-  const owner = accounts[0];
-  const alice = accounts[1];
-  const bob = accounts[2];
-  const millisToWait = 2500;
-  const debatingPeriodMul = 2;
-
-
-  
-
-  it('should add two suggestions', async () => {
-    const vot = await kDaO.deployed();
-    const resAlice = await vot.submitSuggestion(0, 'Suggestion 1', {
-      from: alice,
-    });
-    console.log('kDaO submitSuggestion(): ', resAlice.receipt.gasUsed);
-    await vot.submitSuggestion(0, 'Suggestion 2', { from: bob });
-    const num = await vot.numberOfProposalSuggestions(0);
-    assert.equal(num, '2', 'Submissions wwere not correctly set');
-    console.log(await vot.getProposalSuggestionMetadata(0, 0));
-    console.log(await vot.getProposalSuggestionMetadata(0, 1));
-  });
-});
-*/
 
 contract('AggregatorContract', (accounts) => {
   const owner = accounts[0];
@@ -38,8 +13,12 @@ contract('AggregatorContract', (accounts) => {
   const bob = accounts[2];
   const amountToStake = 10;
   let kDaOAddress = '0x0';
-  const millisToWait = 2500;
+  const millisToWait = 9000;
   const debatingPeriodMul = 2;
+
+  console.log(owner);
+  console.log(alice);
+  console.log(bob);
 
   it('should transfer 100 tokens to alice and bob', async () => {
     const token = await kDaOToken.deployed();

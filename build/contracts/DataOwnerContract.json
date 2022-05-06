@@ -15456,6 +15456,12 @@
     "version": "0.8.12+commit.f00d7308.Emscripten.clang"
   },
   "networks": {
+    "1337": {
+      "events": {},
+      "links": {},
+      "address": "0x1ADB4e782226cf66FF065FDF2D52B1ee7D831A64",
+      "transactionHash": "0x90b323055fd34da598a3b8b5487d444477ec37d790ae3838bf39015d9b48cdd5"
+    },
     "1651573550682": {
       "events": {
         "0xe2e78e2c89d7eb614fa042df288c7958244c063555aa8d031070a883a40a6339": {
@@ -15528,7 +15534,7 @@
     }
   },
   "schemaVersion": "3.4.5",
-  "updatedAt": "2022-05-03T17:22:17.382Z",
+  "updatedAt": "2022-05-05T14:38:54.067Z",
   "networkType": "ethereum",
   "devdoc": {
     "details": "Enables a Data Owner to maintaing an Access Control List for managing access to the data",
