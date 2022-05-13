@@ -12,13 +12,13 @@ const optionDefinitions = [
   { name: 'threshold', alias: 't', type: Number, defaultValue: 4 },
   { name: 'nodes', alias: 'n', type: Number, defaultValue: 4 },
   { name: 'tests', alias: 'x', type: Number, defaultValue: 1 },
-  { name: 'cycles', alias: 'c', type: Number, defaultValue: 10 },
+  { name: 'cycles', alias: 'c', type: Number, defaultValue: 20 },
   { name: 'lambda', alias: 'l', type: Number, defaultValue: 3000 },
   {
     name: 'directory',
     alias: 'd',
     type: String,
-    defaultValue: 'outputDataset',
+    defaultValue: 'outputDataset4',
   },
 ];
 const options = commandLineArgs(optionDefinitions);
@@ -210,7 +210,7 @@ const preProcessing = async (plaintext, threshold, nodes_number) => {
     });
 
     // Deploy DOContract
-    await deployer.sendEther(aggregator.account, tmpAcc, 100000000000000000);
+    //await deployer.sendEther(aggregator.account, tmpAcc, 10000000000000000000);
     bobs.doc.push(await deployer.deployDataOwnerContract(tmpAcc));
 
     // Get and send Capsule
